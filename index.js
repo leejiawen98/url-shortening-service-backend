@@ -7,7 +7,7 @@ const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: 'password',
-    database: 'url-database'
+    database: 'url_database'
 })
 
 // CORS Configuration
@@ -37,4 +37,54 @@ app.listen(process.env.PORT || 3001, () => {
 // Routes
 app.get('/', (req, res) => {
     res.status(200).send("Connected");
+});
+
+app.post('/post/shorten', (req, res) => {
+    const url = req.body.url;
+
+    const checkSql = "SELECT * FROM shortened_urls WHERE url = ?";
+    db.query(checkSql, [url], (err, result) => {
+        if (result.length === 0) {
+            //Generate random alphanumeric string
+            const short_url = "/" + Math.random().toString(36).slice(6);
+            
+            const sql = "INSERT INTO shortened_urls (url, click, short_url) VALUES (?,?,?)";
+            db.query(sql, [url, 0, short_url], (err, result) => {
+                if (result) {
+                    res.status(201).send(short_url);
+                } else {
+                    console.log(err.sqlMessage);
+                    res.status(400).send(err.sqlMessage)
+                }
+            });
+        } else if (result.length > 0) {
+            res.status(200).send(result);
+        }
+    })
+});
+
+app.get('/get/urls', (req, res) => {
+    const sql = "SELECT * FROM shortened_urls";
+    db.query(sql, (err, result) => {
+        if (result) {
+            res.status(200).send(result);
+        } else {
+            res.status(400).send(err.sqlMessage)
+        }
+    });
+});
+
+app.post('/post/url', (req, res) => {
+    const shortUrl = req.body.shortUrl;
+    const sql = "SELECT url FROM shortened_urls WHERE short_url = ?";
+    db.query(sql, [shortUrl], (err, result) => {
+        if (result.length > 0) {
+            res.status(200).send(result);
+        } else if (result.length === 0) {
+            res.status(404).send("Not Found")
+        }
+        if (err) {
+            res.status(400).send(err.sqlMessage)
+        }
+    });
 });
