@@ -4,10 +4,10 @@ const bodyParser = require('body-parser')
 const mysql = require('mysql')
 
 const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'url_database'
+    host: 'us-cdbr-east-06.cleardb.net',
+    user: 'b723f56f9245ac',
+    password: 'a30a36f6',
+    database: 'heroku_2bc37bcefdabbb0'
 })
 
 // CORS Configuration
